@@ -1,3 +1,6 @@
 .env
 .venv/
 likes.json
+matches.json
+suspicious.json
+__pycache__/
