@@ -14,16 +14,16 @@ if not token:
 client = Client(token).init()     
  
 likes = client.users_likes_tracks()
+
 print('Лайкнутых треков:', len(likes.tracks))
 tracks = likes.fetch_tracks()
 
-
 data = []
-
 for track in tracks:
     item ={
         "title": track.title,
-        "artists": [a.name for a in track.artists]
+        "artists": [a.name for a in track.artists], 
+        "version": track.version   
     }
     data.append(item)
 with open ("likes.json", "w", encoding="utf-8") as file:

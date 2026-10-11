@@ -29,7 +29,9 @@ suspicious = []
 
 for track in data:
     ya_artists = " ".join(track["artists"])
-    query = f"{ya_artists} {track['title']}"
+    query = f"{ya_artists} {track['title']}".replace (" -", " ")
+    if track.get("version"):
+        query += " " + track["version"]
     results = yt.search(query, filter="songs")
 
     best = None
