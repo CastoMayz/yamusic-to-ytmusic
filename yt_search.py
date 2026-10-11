@@ -2,12 +2,22 @@ import json
 from ytmusicapi import YTMusic
 from difflib import SequenceMatcher
 
-SequenceMatcher(None, "dj zup raiii", "dj zup ralii").ratio()   # МЫ ЗДЕСЬ, ДЕЛАЕМ СРАВНЕНИЕ ИМЕНИ
+def same_name(a, b):
+    """True, если имена a и b похожи достаточно, чтобы считать их одним исполнителем."""
+    a = a.lower().replace(",", "").replace(".", "")
+    b = b.lower().replace(",", "").replace(".", "")                              
+
+    if a in b or b in a:                         
+        return True
+
+    ratio = SequenceMatcher(None, a, b).ratio()
+    return ratio >= 0.85
+
 def artist_matches(ya_artists, result):
     """True, если хотя бы один исполнитель из Яндекса есть в результате YouTube."""
-    yt_names = [a["name"].lower() for a in result.get("artists", [])]
+    yt_names = [a["name"] for a in result.get("artists", [])]
     for name in ya_artists:
-        if name.lower() in yt_names:
+        if any(same_name(name, yt_name) for yt_name in yt_names):
             return True
     return False
 
