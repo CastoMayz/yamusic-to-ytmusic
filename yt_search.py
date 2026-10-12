@@ -14,7 +14,7 @@ def same_name(a, b):
     ratio = SequenceMatcher(None, a, b).ratio()
     return ratio >= 0.85
 
-#Сравнение исполнителя/ей. сначала сравниваем точно, потом - примерно. по функции same_name. 
+#Сравнение исполнителя/ей, смотря что передали в exact - точное или похожее
 def artist_matches(ya_artists, result, exact):                                        
     """True, если исполнитель из Яндекса совпадает с исполнителем результата YouTube.
     exact=True — строгое сравнение (без учёта регистра), exact=False — нечёткое через same_name."""
@@ -27,6 +27,7 @@ def artist_matches(ya_artists, result, exact):
                 return True
     return False
 
+#Сравнение 5 первых результатов - сначала ищет точное совпадение, потом примерное. если не нашло - ничего
 def find_best(results, track):
     """Лучший результат поиска для трека из Яндекса или None."""
     top = results[:5]
