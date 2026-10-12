@@ -2,7 +2,8 @@ import json
 from ytmusicapi import YTMusic
 from difflib import SequenceMatcher
 
-def same_name(a, b):
+#Сравнение имени из яндекс музыки и полученного результата
+def same_name(a, b):                                                                    
     """True, если имена a и b похожи достаточно, чтобы считать их одним исполнителем."""
     a = a.lower().replace(",", "").replace(".", "")
     b = b.lower().replace(",", "").replace(".", "")                              
@@ -13,38 +14,54 @@ def same_name(a, b):
     ratio = SequenceMatcher(None, a, b).ratio()
     return ratio >= 0.85
 
-def artist_matches(ya_artists, result):
-    """True, если хотя бы один исполнитель из Яндекса есть в результате YouTube."""
+#Сравнение исполнителя/ей. сначала сравниваем точно, потом - примерно. по функции same_name. 
+def artist_matches(ya_artists, result, exact):                                        
+    """True, если исполнитель из Яндекса совпадает с исполнителем результата YouTube.
+    exact=True — строгое сравнение (без учёта регистра), exact=False — нечёткое через same_name."""
     yt_names = [a["name"] for a in result.get("artists", [])]
     for name in ya_artists:
-        if any(same_name(name, yt_name) for yt_name in yt_names):
-            return True
+        for yt_name in yt_names:
+            if exact and name.lower() == yt_name.lower():
+                return True
+            if not exact and same_name(name, yt_name):
+                return True
     return False
 
-yt = YTMusic()
+def find_best(results, track):
+    """Лучший результат поиска для трека из Яндекса или None."""
+    top = results[:5]
+
+    for r in top:
+        if artist_matches(track["artists"], r, exact=True):    # точно
+            return r
+
+    for r in top:
+        if artist_matches(track["artists"], r, exact=False):   # похоже
+            return r
+
+    return None
+
+yt = YTMusic() 
 with open ("likes.json", "r", encoding="utf-8") as file:
     data = json.load(file)
 matches = []
 suspicious = []
-
+#Поиск трека по данным из библиотеки яндекс, дальше - сравнение. не подходит - отправляем в проверить. 
 for track in data:
     ya_artists = " ".join(track["artists"])
-    query = f"{ya_artists} {track['title']}".replace (" -", " ")
+    query = f"{ya_artists} {track['title']}"
     if track.get("version"):
         query += " " + track["version"]
+    query = query.replace(" -", " ")
     results = yt.search(query, filter="songs")
 
-    best = None
-    for r in results[:5]:                  # первые 5 результатов
-        if artist_matches(track["artists"], r):
-            best = r
-            break                          # нашли — дальше не ищем
+    best = find_best(results, track)                      
 
     if best is None:
         print("ПРОВЕРИТЬ:", query)
         suspicious.append(query)
         continue
-
+    #Записываем полученные данные из ютуб музыки, добавляя в matches
     yt_artists = ", ".join([a["name"] for a in best.get("artists", [])])
     found = f"{yt_artists} - {best["title"]}"            
     print(query, "→", found)
