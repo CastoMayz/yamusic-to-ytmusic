@@ -66,6 +66,9 @@ for track in data:
     best = find_best(results, track)                      
 
     if best is None:
+        results = yt.search(query, filter="videos")
+        best = find_best(results, track)    
+    if best is None:
         print("ПРОВЕРИТЬ:", query)
         suspicious.append(query)
         continue
