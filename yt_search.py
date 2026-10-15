@@ -2,6 +2,13 @@ import json
 from ytmusicapi import YTMusic
 from difflib import SequenceMatcher
 
+def same_duration (ym, yt):
+    tolerance=3
+    if yt is None or ym is None:
+        return True
+    return abs(yt-ym)<=tolerance
+  
+
 #Сравнение имени из яндекс музыки и полученного результата
 def same_name(a, b):                                                                    
     """True, если имена a и b похожи достаточно, чтобы считать их одним исполнителем."""
@@ -33,11 +40,11 @@ def find_best(results, track):
     top = results[:5]
 
     for r in top:
-        if artist_matches(track["artists"], r, exact=True):    # точно
+        if artist_matches(track["artists"], r, exact=True) and same_name(track["title"], r.get("title")) and same_duration(track["duration"], r.get("duration_seconds")):    # точно
             return r
 
     for r in top:
-        if artist_matches(track["artists"], r, exact=False):   # похоже
+        if artist_matches(track["artists"], r, exact=False) and same_name(track["title"], r.get("title")) and same_duration(track["duration"], r.get("duration_seconds")):   # похоже
             return r
 
     return None
