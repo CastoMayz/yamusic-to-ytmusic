@@ -23,7 +23,8 @@ for track in tracks:
     item ={
         "title": track.title,
         "artists": [a.name for a in track.artists], 
-        "version": track.version   
+        "version": track.version,
+        "duration": track.duration_ms//1000 if track.duration_ms is not None else None
     }
     data.append(item)
 with open ("likes.json", "w", encoding="utf-8") as file:
